@@ -1,0 +1,106 @@
+Q-1 Conclusion:
+Main-signal.c
+Output :
+==441== Helgrind, a thread error detector
+==441== Copyright (C) 2007-2017, and GNU GPL'd, by OpenWorks LLP et al.
+==441== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
+==441== Command: ./main-signal
+==441== 
+this should print first
+==441== ---Thread-Announcement------------------------------------------
+==441==
+==441== Thread #2 was created
+==441==    at 0x498FBE3: clone (clone.S:76)
+==441==    by 0x4990ADE: __clone_internal (clone-internal.c:83)
+==441==    by 0x48FE6D8: create_thread (pthread_create.c:295)
+==441==    by 0x48FF1FF: pthread_create@@GLIBC_2.34 (pthread_create.c:828)
+==441==    by 0x4853767: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==441==    by 0x109217: main (main-signal.c:15)
+==441==
+==441== ---Thread-Announcement------------------------------------------
+==441==
+==441== Thread #1 is the program's root thread
+==441==
+==441== ----------------------------------------------------------------
+==441==
+==441== Possible data race during write of size 4 at 0x10C014 by thread #2
+==441== Locks held: none
+==441==    at 0x1091C8: worker (main-signal.c:9)
+==441==    by 0x485396A: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==441==    by 0x48FEAC2: start_thread (pthread_create.c:442)
+==441==    by 0x498FBF3: clone (clone.S:100)
+==441==
+==441== This conflicts with a previous read of size 4 by thread #1
+==441== Locks held: none
+==441==    at 0x109245: main (main-signal.c:16)
+==441==  Address 0x10c014 is 0 bytes inside data symbol "done"
+==441==
+==441== ----------------------------------------------------------------
+==441==
+==441== Possible data race during read of size 4 at 0x10C014 by thread #1
+==441== Locks held: none
+==441==    at 0x109245: main (main-signal.c:16)
+==441==
+==441== This conflicts with a previous write of size 4 by thread #2
+==441== Locks held: none
+==441==    at 0x1091C8: worker (main-signal.c:9)
+==441==    by 0x485396A: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==441==    by 0x48FEAC2: start_thread (pthread_create.c:442)
+==441==    by 0x498FBF3: clone (clone.S:100)
+==441==  Address 0x10c014 is 0 bytes inside data symbol "done"
+==441==
+==441== ----------------------------------------------------------------
+==441==
+==441== Possible data race during write of size 1 at 0x52961A5 by thread #1
+==441== Locks held: none
+==441==    at 0x4859796: mempcpy (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==441==    by 0x48F5664: _IO_new_file_xsputn (fileops.c:1235)
+==441==    by 0x48F5664: _IO_file_xsputn@@GLIBC_2.2.5 (fileops.c:1196)
+==441==    by 0x48EAF1B: puts (ioputs.c:40)
+==441==    by 0x10925D: main (main-signal.c:17)
+==441==  Address 0x52961a5 is 21 bytes inside a block of size 1,024 alloc'd
+==441==    at 0x484A919: malloc (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==441==    by 0x48E8BA3: _IO_file_doallocate (filedoalloc.c:101)
+==441==    by 0x48F7CDF: _IO_doallocbuf (genops.c:347)
+==441==    by 0x48F6F5F: _IO_file_overflow@@GLIBC_2.2.5 (fileops.c:744)
+==441==    by 0x48F56D4: _IO_new_file_xsputn (fileops.c:1243)
+==441==    by 0x48F56D4: _IO_file_xsputn@@GLIBC_2.2.5 (fileops.c:1196)
+==441==    by 0x48EAF1B: puts (ioputs.c:40)
+==441==    by 0x1091C7: worker (main-signal.c:8)
+==441==    by 0x485396A: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==441==    by 0x48FEAC2: start_thread (pthread_create.c:442)
+==441==    by 0x498FBF3: clone (clone.S:100)
+==441==  Block was alloc'd by thread #2
+==441==
+this should print last
+==441==
+==441== Use --history-level=approx or =none to gain increased speed, at
+==441== the cost of reduced accuracy of conflicting-access information
+==441== For lists of detected and suppressed errors, rerun with: -s
+==441== ERROR SUMMARY: 24 errors from 3 contexts (suppressed: 40 from 34)
+conclusion:
+Prolonged spinning of the parent, waiting for a slow child, leads to inefficient CPU usage.
+Helgrind identifies a race condition in modifying the 'done' variable, potentially affecting code accuracy.
+Despite seemingly correct output, undetected race conditions pose non-deterministic results.
+The code's functionality may appear accurate, yet underlying race conditions risk unpredictable outcomes.
+
+Q-2 Coclusion:
+Main-signal-cv
+Output:
+==449== Helgrind, a thread error detector
+==449== Copyright (C) 2007-2017, and GNU GPL'd, by OpenWorks LLP et al.
+==449== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
+==449== Command: ./main-signal-cv
+==449==
+this should print first
+this should print last
+==449==
+==449== Use --history-level=approx or =none to gain increased speed, at
+==449== the cost of reduced accuracy of conflicting-access information
+==449== For lists of detected and suppressed errors, rerun with: -s
+==449== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 7 from 7)
+
+Conclusion:
+This approach grants better control over synchronization, enhancing both performance and correctness while preventing potential errors associated with
+default behaviors. It optimizes CPU usage, avoiding wastage of resources, and ensures compatibility with thread error detection tools like Helgrind, 
+reducing reported errors and bolstering the code's reliability in concurrent operations.
